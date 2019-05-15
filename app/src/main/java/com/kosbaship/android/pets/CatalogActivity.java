@@ -18,7 +18,7 @@ package com.kosbaship.android.pets;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
@@ -28,49 +28,31 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.kosbaship.android.pets.data.PetContract.PetEntry;
-import com.kosbaship.android.pets.data.PetDbHelper;
 
 /**
  * Displays list of pets that were entered and stored in the app.
  */
 public class CatalogActivity extends AppCompatActivity {
 
-    //                                  (1 - D)
-    // (1 - E) Go to EditorActivity.java
-    // (1 - D - 1)
-    /** Database helper that will provide us access to the database */
-    private PetDbHelper mDbHelper;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_catalog);
-        //                          (1 - A)
-        //(1 - A - 1)
-        //(1 - A - 2) go and create the activity_editor.xml
+
         // Setup FAB to open EditorActivity
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        //(1 - A - 10 )
-        // setOnClickListener to th fab button
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // open the editor activity
                 Intent intent = new Intent(CatalogActivity.this, EditorActivity.class);
                 startActivity(intent);
             }
         });
-
-        // (1 - D - 2)
-        // To access our database, we instantiate our subclass of SQLiteOpenHelper
-        // and pass the context, which is the current activity.
-        mDbHelper = new PetDbHelper(this);
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        // (1 - E - 3)
         displayDatabaseInfo();
     }
 
@@ -79,13 +61,7 @@ public class CatalogActivity extends AppCompatActivity {
      * the pets database.
      */
     private void displayDatabaseInfo() {
-        //                         (1 - F)
-        //next step is ( 101 ) go to PetProvider.java
-        // (1 - F - 1)
-        // Create and/or open a database to read from it
-        SQLiteDatabase db = mDbHelper.getReadableDatabase();
-
-        // (1 - F - 2)
+        // (101 - G - 2)
         // Define a projection that specifies which columns from the database
         // you will actually use after this query.
         String[] projection = {
@@ -94,17 +70,20 @@ public class CatalogActivity extends AppCompatActivity {
                 PetEntry.COLUMN_PET_BREED,
                 PetEntry.COLUMN_PET_GENDER,
                 PetEntry.COLUMN_PET_WEIGHT };
-
-        // (1 - F - 3)
-        // Perform a query on the pets table
-        Cursor cursor = db.query(
-                PetEntry.TABLE_NAME,   // The table to query
-                projection,            // The columns to return
-                null,                  // The columns for the WHERE clause
-                null,                  // The values for the WHERE clause
-                null,                  // Don't group the rows
-                null,                  // Don't filter by row groups
-                null);                   // The sort order
+        //                          (101 - G)
+        // (101 - H) go to PetProvider.java
+        // (101 - G - 1)
+        // Perform a query on the provider using the ContentResolver.
+        // ContentResolver:
+        //      will help us to determine the correct ContentProvider
+        //      by reading the content authority inside the uri
+        // Use the {@link PetEntry#CONTENT_URI} to access the pet data.
+        Cursor cursor = getContentResolver().query(
+                PetEntry.CONTENT_URI,   // The content URI of the words table
+                projection,             // The columns to return for each row
+                null,                   // Selection criteria
+                null,                   // Selection criteria
+                null);                  // The sort order for the returned rows
 
         TextView displayView = (TextView) findViewById(R.id.text_view_pet);
 
@@ -123,14 +102,13 @@ public class CatalogActivity extends AppCompatActivity {
                     PetEntry.COLUMN_PET_GENDER + " - " +
                     PetEntry.COLUMN_PET_WEIGHT + "\n");
 
-            // (1 - F - 4)
             // Figure out the index of each column
             int idColumnIndex = cursor.getColumnIndex(PetEntry._ID);
             int nameColumnIndex = cursor.getColumnIndex(PetEntry.COLUMN_PET_NAME);
             int breedColumnIndex = cursor.getColumnIndex(PetEntry.COLUMN_PET_BREED);
             int genderColumnIndex = cursor.getColumnIndex(PetEntry.COLUMN_PET_GENDER);
             int weightColumnIndex = cursor.getColumnIndex(PetEntry.COLUMN_PET_WEIGHT);
-            // (1 - F - 5)
+
             // Iterate through all the returned rows in the cursor
             while (cursor.moveToNext()) {
                 // Use that index to extract the String or Int value of the word
@@ -148,42 +126,33 @@ public class CatalogActivity extends AppCompatActivity {
                         currentWeight));
             }
         } finally {
-            // (1 - F - 6)
             // Always close the cursor when you're done reading from it. This releases all its
             // resources and makes it invalid.
             cursor.close();
         }
     }
 
-    // (1 - D - 4)
     /**
      * Helper method to insert hardcoded pet data into the database. For debugging purposes only.
      */
     private void insertPet() {
-        // Gets the database in write mode
-        SQLiteDatabase db = mDbHelper.getWritableDatabase();
-
         // Create a ContentValues object where column names are the keys,
         // and Toto's pet attributes are the values.
         ContentValues values = new ContentValues();
-        values.put(PetEntry.COLUMN_PET_NAME, "Toto");
-        values.put(PetEntry.COLUMN_PET_BREED, "Terrier");
+        values.put(PetEntry.COLUMN_PET_NAME, "Max");
+        values.put(PetEntry.COLUMN_PET_BREED, "Bull Dog");
         values.put(PetEntry.COLUMN_PET_GENDER, PetEntry.GENDER_MALE);
-        values.put(PetEntry.COLUMN_PET_WEIGHT, 7);
+        values.put(PetEntry.COLUMN_PET_WEIGHT, 15);
 
-        // Insert a new row for Toto in the database, returning the ID of that new row.
-        // The first argument for db.insert() is the pets table name.
-        // The second argument provides the name of a column in which the framework
-        // can insert NULL in the event that the ContentValues is empty (if
-        // this is set to "null", then the framework will not insert a row when
-        // there are no values).
-        // The third argument is the ContentValues object containing the info for Toto.
-        long newRowId = db.insert(PetEntry.TABLE_NAME, null, values);
+        //                              (101 - I)
+        //(101 - J) Go to EditorActivity.java
+        // Insert a new row for Max into the provider using the ContentResolver.
+        // Use the {@link PetEntry#CONTENT_URI} to indicate that we want to insert
+        // into the pets database table.
+        // Receive the new content URI that will allow us to access Max's data in the future.
+        Uri newUri = getContentResolver().insert(PetEntry.CONTENT_URI, values);
     }
 
-    //(1 - A - 11 )
-    //(1 - B) Go create PetContact.java
-    // create the onCreateOptionsMenu and onOptionsItemSelected
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu options from the res/menu/menu_catalog.xml file.
@@ -198,7 +167,6 @@ public class CatalogActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             // Respond to a click on the "Insert dummy data" menu option
             case R.id.action_insert_dummy_data:
-                // (1 - D - 3)
                 insertPet();
                 displayDatabaseInfo();
                 return true;

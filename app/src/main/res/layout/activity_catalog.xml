@@ -10,11 +10,6 @@
      See the License for the specific language governing permissions and
      limitations under the License.
 -->
-<!--
-                            (1)
-    (1 - B) go to CatalogActivity.java
-    (1 - A) design this activity with the floating action button
--->
 <!-- Layout for the list of pets -->
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"

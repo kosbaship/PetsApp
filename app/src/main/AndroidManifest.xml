@@ -37,6 +37,20 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.kosbaship.android.pets.CatalogActivity" />
         </activity>
+        <!--
+                                    (101 - B)
+            (101 - C) go to PetProvider.java
+            add this tag to tell the app you are using content provider
+            1- the name of the java class of the provider
+            2- the content authority which uniquely identify the
+                content provider on our device
+            3- the exported is determine Whether or not our content
+                provider visible to other apps
+        -->
+        <provider
+            android:name="com.kosbaship.android.pets.data.PetProvider"
+            android:authorities="com.kosbaship.android.pets"
+            android:exported="false" />
     </application>
 
 </manifest>

@@ -16,7 +16,7 @@
 package com.kosbaship.android.pets;
 
 import android.content.ContentValues;
-import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
@@ -31,21 +31,21 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.kosbaship.android.pets.data.PetContract.PetEntry;
-import com.kosbaship.android.pets.data.PetDbHelper;
 
 /**
  * Allows user to create a new pet or edit an existing one.
  */
 public class EditorActivity extends AppCompatActivity {
 
-    //                                      (1 - A - 3)
-    //declare the views on the screen
     /** EditText field to enter the pet's name */
     private EditText mNameEditText;
+
     /** EditText field to enter the pet's breed */
     private EditText mBreedEditText;
+
     /** EditText field to enter the pet's weight */
     private EditText mWeightEditText;
+
     /** EditText field to enter the pet's gender */
     private Spinner mGenderSpinner;
 
@@ -60,19 +60,17 @@ public class EditorActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_editor);
-        //                                      (1 - A - 4)
+
         // Find all relevant views that we will need to read user input from
         mNameEditText = (EditText) findViewById(R.id.edit_pet_name);
         mBreedEditText = (EditText) findViewById(R.id.edit_pet_breed);
         mWeightEditText = (EditText) findViewById(R.id.edit_pet_weight);
         mGenderSpinner = (Spinner) findViewById(R.id.spinner_gender);
-        //                                      (1 - A - 5)
-        // call this method
+
         setupSpinner();
     }
 
     /**
-     *                                      (1 - A - 6)
      * Setup the dropdown spinner that allows the user to select the gender of the pet.
      */
     private void setupSpinner() {
@@ -110,9 +108,7 @@ public class EditorActivity extends AppCompatActivity {
             }
         });
     }
-    //                                          (1 - E)
-    // (1 - E - 3) go to CatalogActivity.java
-    // (1 - E - 1)
+
     /**
      * Get user input from editor and save new pet into database.
      */
@@ -124,12 +120,6 @@ public class EditorActivity extends AppCompatActivity {
         String weightString = mWeightEditText.getText().toString().trim();
         int weight = Integer.parseInt(weightString);
 
-        // Create database helper
-        PetDbHelper mDbHelper = new PetDbHelper(this);
-
-        // Gets the database in write mode
-        SQLiteDatabase db = mDbHelper.getWritableDatabase();
-
         // Create a ContentValues object where column names are the keys,
         // and pet attributes from the editor are the values.
         ContentValues values = new ContentValues();
@@ -138,22 +128,25 @@ public class EditorActivity extends AppCompatActivity {
         values.put(PetEntry.COLUMN_PET_GENDER, mGender);
         values.put(PetEntry.COLUMN_PET_WEIGHT, weight);
 
-        // Insert a new row for pet in the database, returning the ID of that new row.
-        long newRowId = db.insert(PetEntry.TABLE_NAME, null, values);
+        //                              (101 - J)
+        //(101 - J - 3) Go to strings.xml
+        // (101 - J - 1)
+        // Insert a new pet into the provider, returning the content URI for the new pet.
+        Uri newUri = getContentResolver().insert(PetEntry.CONTENT_URI, values);
 
+        // (101 - J - 2)
         // Show a toast message depending on whether or not the insertion was successful
-        if (newRowId == -1) {
-            // If the row ID is -1, then there was an error with insertion.
-            Toast.makeText(this, "Error with saving pet", Toast.LENGTH_SHORT).show();
+        if (newUri == null) {
+            // If the new content URI is null, then there was an error with insertion.
+            Toast.makeText(this, getString(R.string.editor_insert_pet_failed),
+                    Toast.LENGTH_SHORT).show();
         } else {
-            // Otherwise, the insertion was successful and we can display a toast with the row ID.
-            Toast.makeText(this, "Pet saved with row id: " + newRowId, Toast.LENGTH_SHORT).show();
+            // Otherwise, the insertion was successful and we can display a toast.
+            Toast.makeText(this, getString(R.string.editor_insert_pet_successful),
+                    Toast.LENGTH_SHORT).show();
         }
     }
 
-    //(1 - A - 7)
-    //(1 - A - 8) Go to menu_editor.xml
-    // create the onCreateOptionsMenu and onOptionsItemSelected
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu options from the res/menu/menu_editor.xml file.
@@ -168,7 +161,6 @@ public class EditorActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             // Respond to a click on the "Save" menu option
             case R.id.action_save:
-                // (1 - E - 2)
                 // Save pet to database
                 insertPet();
                 // Exit activity

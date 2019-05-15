@@ -10,11 +10,6 @@
      See the License for the specific language governing permissions and
      limitations under the License.
 -->
-<!--
-                                    //(1 - A - 2)
-    //(1 - A - 3) go to EditorActivity.java
-    Create this activity and design the layout
--->
 <!-- Layout for the editor -->
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"

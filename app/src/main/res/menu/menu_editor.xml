@@ -10,11 +10,6 @@
      See the License for the specific language governing permissions and
      limitations under the License.
 -->
-<!--
-                        //(1 - A - 8)
-//(1 - A - 9 ) go to menu_catalog.xml
-create this menu
--->
 <!-- Options menu for the EditorActivity -->
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
