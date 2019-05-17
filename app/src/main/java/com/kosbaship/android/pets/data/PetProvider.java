@@ -366,7 +366,8 @@ public class PetProvider extends ContentProvider {
                 throw new IllegalArgumentException("Deletion is not supported for " + uri);
         }
     }
-    //(101 - N)
+    //                                          (101 - N)
+    //(102) go to list_item.xml
     //The purpose of this method is to return a String that describes the type of the data
     // stored at the input Uri. This String is known as the MIME type,
     // which can also be referred to as content type.
