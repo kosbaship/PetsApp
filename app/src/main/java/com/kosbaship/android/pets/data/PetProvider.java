@@ -159,6 +159,14 @@ public class PetProvider extends ContentProvider {
             default:
                 throw new IllegalArgumentException("Cannot query unknown URI " + uri);
         }
+        //                                   (107)
+        // (107 - A)
+        // Set notification URI on the Cursor,
+        // to tell it what data to watch
+        // so we know what
+        // If the data at this URI changes, then we know we need to update the Cursor.
+        cursor.setNotificationUri(getContext().getContentResolver(), uri);
+
         //(101 - F - 5)
         // Return the cursor
         return cursor;
@@ -233,6 +241,11 @@ public class PetProvider extends ContentProvider {
             Log.e(LOG_TAG, "Failed to insert row for " + uri);
             return null;
         }
+
+        //(107 - B)
+        // Notify all listeners that the data has changed for the pet content URI
+        getContext().getContentResolver().notifyChange(uri, null);
+
         // (101 - H - 3 - d)
         // ContentUris.withAppendedId() :
         //        Will add the row ID to the end of the pet URI
@@ -329,9 +342,20 @@ public class PetProvider extends ContentProvider {
         //(101 - L - 5)
         // Otherwise, get writable database to update the data
         SQLiteDatabase database = mDbHelper.getWritableDatabase();
-        //(101 - L - 6)
-        // Returns the number of database rows affected by the update statement
-        return database.update(PetEntry.TABLE_NAME, values, selection, selectionArgs);
+        //(101 - L - 6 - a)
+        // Perform the update on the database and get the number of rows affected
+        int rowsUpdated = database.update(PetEntry.TABLE_NAME, values, selection, selectionArgs);
+
+        //(107 - C)
+        // If 1 or more rows were updated, then notify all listeners that the data at the
+        // given URI has changed
+        if (rowsUpdated != 0) {
+            getContext().getContentResolver().notifyChange(uri, null);
+        }
+
+        //(101 - L - 6 - b)
+        // Return the number of rows updated
+        return rowsUpdated;
     }
 
     //                              (101 - M)
@@ -341,17 +365,23 @@ public class PetProvider extends ContentProvider {
         //(101 - M - 1)
         // Get writable database
         SQLiteDatabase database = mDbHelper.getWritableDatabase();
+
+        //(101 - M - 3 - a)
+        // Track the number of rows that were deleted
+        int rowsDeleted;
+
         //(101 - M - 2)
         // Figure out if the URI matcher can match the URI to a specific code
         // and do not forget those codes we defined them early in the step (101 - E - 2)
         // with all possible paths
         final int match = sUriMatcher.match(uri);
-        //(101 - M - 3)
+        //(101 - M - 3 - b)
         //decide which path to go dawn
         switch (match) {
             case PETS:
                 // Delete all rows that match the selection and selection args
-                return database.delete(PetEntry.TABLE_NAME, selection, selectionArgs);
+                rowsDeleted = database.delete(PetEntry.TABLE_NAME, selection, selectionArgs);
+                break;
             case PET_ID:
                 // Delete a single row given by the ID in the URI
                 selection = PetEntry._ID + "=?";
@@ -361,10 +391,21 @@ public class PetProvider extends ContentProvider {
                 //      this will convert this segment into a string
                 //      because the selectionArgs is a string array
                 selectionArgs = new String[] { String.valueOf(ContentUris.parseId(uri)) };
-                return database.delete(PetEntry.TABLE_NAME, selection, selectionArgs);
+                rowsDeleted = database.delete(PetEntry.TABLE_NAME, selection, selectionArgs);
+                break;
             default:
                 throw new IllegalArgumentException("Deletion is not supported for " + uri);
         }
+        // (107 - D)
+        // If 1 or more rows were deleted, then notify all listeners that the data at the
+        // given URI has changed
+        if (rowsDeleted != 0) {
+            getContext().getContentResolver().notifyChange(uri, null);
+        }
+
+        // Return the number of rows deleted
+        return rowsDeleted;
+
     }
     //                                          (101 - N)
     //(102) go to list_item.xml
