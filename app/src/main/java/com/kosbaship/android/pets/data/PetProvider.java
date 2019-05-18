@@ -160,6 +160,7 @@ public class PetProvider extends ContentProvider {
                 throw new IllegalArgumentException("Cannot query unknown URI " + uri);
         }
         //                                   (107)
+        // (108) go to CatalogActivity.java
         // (107 - A)
         // Set notification URI on the Cursor,
         // to tell it what data to watch

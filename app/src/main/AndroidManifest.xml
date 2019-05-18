@@ -29,7 +29,6 @@
         </activity>
         <activity
             android:name="com.kosbaship.android.pets.EditorActivity"
-            android:label="@string/editor_activity_title_new_pet"
             android:theme="@style/EditorTheme"
             android:parentActivityName="com.kosbaship.android.pets.CatalogActivity" >
             <!-- Parent activity meta-data to support 4.0 and lower -->
