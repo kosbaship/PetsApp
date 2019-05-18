@@ -311,6 +311,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
             // Respond to a click on the "Delete" menu option
             case R.id.action_delete:
                 //                  (108 - E)
+                //(108 - F) Go to CatalogActivity.java
                 //(108 - E - 1)
                 // Pop up confirmation dialog for deletion
                 showDeleteConfirmationDialog();
