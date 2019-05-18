@@ -90,6 +90,8 @@ public class PetCursorAdapter extends CursorAdapter {
         String petName = cursor.getString(nameColumnIndex);
         String petBreed = cursor.getString(breedColumnIndex);
 
+        //(108 - G - Last)
+        //Hint: TextUtils.isEmpty(String s) returns true if the input String is null or empty.
         // If the pet breed is empty string or null, then use some default text
         // that says "Unknown breed", so the TextView isn't blank.
         if (TextUtils.isEmpty(petBreed)) {

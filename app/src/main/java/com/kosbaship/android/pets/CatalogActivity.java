@@ -140,6 +140,7 @@ public class CatalogActivity extends AppCompatActivity implements
         Uri newUri = getContentResolver().insert(PetEntry.CONTENT_URI, values);
     }
     //                      (108 - F)
+    //(108 - G - Last) go to PetCursorAdapter.java
     //(108 - F - 2)
     /**
      * Helper method to delete all pets in the database.
